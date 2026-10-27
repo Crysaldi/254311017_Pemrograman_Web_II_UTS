@@ -7,65 +7,98 @@ use Illuminate\Http\Request;
 
 class SumberEnergiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $sumberEnergi = SumberEnergi::latest()->get();
+        $query = SumberEnergi::latest();
 
-        return view('sumber_energi.index', compact('sumberEnergi'));
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_energi', 'like', "%{$search}%")
+                  ->orWhere('jenis_energi', 'like', "%{$search}%")
+                  ->orWhere('lokasi', 'like', "%{$search}%");
+            });
+        }
+
+        $limit = $request->get('limit', 10);
+        $sumberEnergis = $query->paginate($limit);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data sumber energi berhasil dimuat.',
+            'data'    => $sumberEnergis->items(),
+            'meta'    => [
+                'current_page' => $sumberEnergis->currentPage(),
+                'last_page'    => $sumberEnergis->lastPage(),
+                'per_page'     => $sumberEnergis->perPage(),
+                'total_items'  => $sumberEnergis->total(),
+                'total_pages'  => $sumberEnergis->lastPage(),
+            ],
+        ]);
     }
 
-    public function create()
+    public function show($id)
     {
-        return view('sumber_energi.create');
+        $sumberEnergi = SumberEnergi::findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $sumberEnergi,
+        ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_energi' => 'required|string|max:255',
+            'nama_energi'  => 'required|string|max:255',
             'jenis_energi' => 'required|string|max:255',
-            'kapasitas' => 'required|numeric|min:0',
-            'lokasi' => 'required|string|max:255',
-            'status_aktif' => 'required|boolean',
+            'kapasitas'    => 'required|numeric|min:0',
+            'lokasi'       => 'required|string|max:255',
+            'status_aktif' => 'required',
         ]);
 
-        SumberEnergi::create($validated);
+        $validated['status_aktif'] = filter_var($validated['status_aktif'], FILTER_VALIDATE_BOOLEAN);
 
-        return redirect()->route('sumber-energi.index')
-            ->with('success', 'Data sumber energi berhasil ditambahkan.');
+        $sumberEnergi = SumberEnergi::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Informasi energi berhasil ditambahkan.',
+            'data'    => $sumberEnergi,
+        ], 201);
     }
 
-    public function show(SumberEnergi $sumberEnergi)
+    public function update(Request $request, $id)
     {
-        return redirect()->route('sumber-energi.index');
-    }
+        $sumberEnergi = SumberEnergi::findOrFail($id);
 
-    public function edit(SumberEnergi $sumberEnergi)
-    {
-        return view('sumber_energi.edit', compact('sumberEnergi'));
-    }
-
-    public function update(Request $request, SumberEnergi $sumberEnergi)
-    {
         $validated = $request->validate([
-            'nama_energi' => 'required|string|max:255',
+            'nama_energi'  => 'required|string|max:255',
             'jenis_energi' => 'required|string|max:255',
-            'kapasitas' => 'required|numeric|min:0',
-            'lokasi' => 'required|string|max:255',
-            'status_aktif' => 'required|boolean',
+            'kapasitas'    => 'required|numeric|min:0',
+            'lokasi'       => 'required|string|max:255',
+            'status_aktif' => 'required',
         ]);
+
+        $validated['status_aktif'] = filter_var($validated['status_aktif'], FILTER_VALIDATE_BOOLEAN);
 
         $sumberEnergi->update($validated);
 
-        return redirect()->route('sumber-energi.index')
-            ->with('success', 'Data sumber energi berhasil diperbarui.');
+        return response()->json([
+            'success' => true,
+            'message' => 'Informasi energi berhasil diperbarui.',
+            'data'    => $sumberEnergi,
+        ]);
     }
 
-    public function destroy(SumberEnergi $sumberEnergi)
+    public function destroy($id)
     {
+        $sumberEnergi = SumberEnergi::findOrFail($id);
         $sumberEnergi->delete();
 
-        return redirect()->route('sumber-energi.index')
-            ->with('success', 'Data sumber energi berhasil dihapus.');
+        return response()->json([
+            'success' => true,
+            'message' => 'Informasi energi berhasil dihapus.',
+        ]);
     }
 }

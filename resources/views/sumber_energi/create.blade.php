@@ -1,55 +1,47 @@
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <title>Tambah Sumber Energi</title>
-</head>
-<body>
-    <h1>Tambah Sumber Energi</h1>
+@extends('layouts.app')
+
+@section('title', 'Tambah Sumber Energi')
+
+@section('content')
+<div style="margin-bottom:24px;">
+    <a href="{{ route('sumber-energi.index') }}" class="text-link">
+        &larr; Kembali ke Sumber Energi
+    </a>
+
+    <div class="page-heading" style="margin-top:18px; margin-bottom:24px;">
+        <div>
+            <span class="eyebrow">DATA ENERGI</span>
+            <h1>Tambah Sumber Energi</h1>
+            <p>Lengkapi informasi sumber energi yang akan didaftarkan.</p>
+        </div>
+    </div>
+</div>
+
+<div class="auth-card" style="max-width:720px; margin:0 auto;">
+    <h2>Informasi Sumber Energi</h2>
+    <p>Isi semua kolom dengan data yang sesuai.</p>
 
     @if ($errors->any())
-        <div style="color:red">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+        <div class="form-alert" style="margin-bottom:20px;">
+            Periksa kembali data yang kamu masukkan.
         </div>
     @endif
 
     <form action="{{ route('sumber-energi.store') }}" method="POST">
         @csrf
 
-        <label>Nama Energi</label><br>
-        <input type="text" name="nama_energi"
-               value="{{ old('nama_energi') }}" required>
-        <br><br>
+        @include('sumber_energi._form')
 
-        <label>Jenis Energi</label><br>
-        <input type="text" name="jenis_energi"
-               value="{{ old('jenis_energi') }}" required>
-        <br><br>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:26px; flex-wrap:wrap;">
+            <a href="{{ route('sumber-energi.index') }}" class="button button-quiet">
+                Batal
+            </a>
 
-        <label>Kapasitas</label><br>
-        <input type="number" name="kapasitas" step="0.01" min="0"
-               value="{{ old('kapasitas') }}" required>
-        <br><br>
-
-        <label>Lokasi</label><br>
-        <input type="text" name="lokasi"
-               value="{{ old('lokasi') }}" required>
-        <br><br>
-
-        <label>Status</label><br>
-        <select name="status_aktif" required>
-            <option value="1" {{ old('status_aktif', '1') == '1' ? 'selected' : '' }}>Aktif</option>
-            <option value="0" {{ old('status_aktif') === '0' ? 'selected' : '' }}>Tidak Aktif</option>
-        </select>
-        <br><br>
-
-        <button type="submit">Simpan</button>
-        <a href="{{ route('sumber-energi.index') }}">Kembali</a>
+            <button type="submit" class="button button-primary">
+                Simpan Sumber Energi
+            </button>
+        </div>
     </form>
-</body>
-</html>
+</div>
+@endsection

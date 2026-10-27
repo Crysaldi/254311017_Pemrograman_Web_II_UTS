@@ -13,20 +13,19 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * Kolom yang boleh diisi secara massal.
      */
     protected $fillable = [
-        'name',
+        'nama',
         'email',
         'password',
+        'pekerjaan',
+        'usia',
+        'role',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
+     * Kolom yang disembunyikan dari serialisasi.
      */
     protected $hidden = [
         'password',
@@ -34,12 +33,31 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
+     * Tipe casting kolom.
      */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password'          => 'hashed',
+        ];
+    }
+
+    // Relasi ke Forum Diskusi (postingan)
+    public function postingan()
+    {
+        return $this->hasMany(Postingan::class, 'user_id');
+    }
+
+    // Relasi ke Forum Diskusi (balasan)
+    public function balasan()
+    {
+        return $this->hasMany(Balasan::class, 'user_id');
+    }
+
+    // Relasi ke Hasil Kuis
+    public function hasilKuis()
+    {
+        return $this->hasMany(HasilKuis::class, 'user_id');
+    }
 }
